@@ -1,5 +1,6 @@
 ---
 layout: tool.html
+script: group-maker.js
 ---
 
 <main>
@@ -16,18 +17,3 @@ layout: tool.html
   </form>
   <div id="output"></div>
 </main>
-
-<script>
-  console.log('hello?', form, output)
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const fd = new FormData(event.target);
-    const size = fd.get("size"),
-      total = fd.get("total");
-
-    output.innerHTML = `For groups of ${size}, count off by ${Math.floor(
-      total / size
-    )}s.`;
-  });
-</script>
