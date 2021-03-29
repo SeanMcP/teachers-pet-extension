@@ -1,0 +1,12 @@
+{
+    "name": "Teacher's Pet",
+    "short_name": "Teacher's Pet",
+    "version": "1.0.0",
+    "description": "A suite of productivity tools for Teachers",
+    "author": "Sean McPherson",
+    "browser_action": {
+        "default_popup": "build/index.html"
+    },
+    "homepage_url": "https://github.com/seanmcp/teachers-pet",
+    "manifest_version": 2
+}
