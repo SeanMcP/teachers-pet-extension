@@ -5,13 +5,13 @@ module.exports = (config) => {
   });
 
   /**
-   * Example: {% link 'group-maker/' %}Link to group maker{% endlink %}
+   * A filter for building extension, x, URLs
+   * @example 'group-maker' | xUrl
    */
-  config.addPairedShortcode(
-    "link",
-    (content, page) =>
-      `<a href="/build/${page ? page : ""}index.html">${content}</a>`
-  );
+  config.addFilter('xUrl', page => {
+    if (page === '/') return '/build/index.html'
+    return `/build/${page}/index.html`
+  })
 
   return {
     dir: {
