@@ -1,0 +1,1 @@
+document.body.textContent = window.location.origin
