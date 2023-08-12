@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Group Maker</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <ui-navbar title="Group Maker"></ui-navbar>
+    <main>
+      <form id="form">
+        <label style="display: block">
+          <b>Number of students</b>
+          <input type="number" name="total" />
+        </label>
+        <label style="display: block">
+          <b>Number of students per group</b>
+          <input type="number" name="size" />
+        </label>
+        <button>Go</button>
+      </form>
+      <div id="output"></div>
+    </main>
+  </body>
+  <script src="/shared.js"></script>
+  <script>
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const fd = new FormData(event.target);
+      const size = fd.get("size"),
+        total = fd.get("total");
+
+      output.innerHTML = `For groups of ${size}, count off by ${Math.floor(
+        total / size
+      )}s.`;
+    });
+  </script>
+</html>
