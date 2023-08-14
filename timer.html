@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      /** TITLE_OF_PAGE STYLES **/
+      [data-status="running"] [data-id="play"] {
+        display: none;
+      }
+
+      [data-status="paused"] [data-id="pause"] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <ui-navbar></ui-navbar>
+    <main>
+      <form id="add">
+        <label>
+          <b>Minutes</b>
+          <input id="minutes" type="number" min="0" max="60" value="1" />
+        </label>
+        <label>
+          <b>Seconds</b>
+          <input id="seconds" type="number" min="0" max="60" value="30" />
+        </label>
+        <button>Add</button>
+      </form>
+      <hr />
+      <output></output>
+    </main>
+  </body>
+  <script>
+    /** TITLE_OF_PAGE SCRIPTS **/
+    const output = document.querySelector("output");
+
+    function forceDigits(number) {
+      return number < 10 ? `0${number}` : number;
+    }
+
+    class Timer {
+      constructor(duration, element) {
+        this.time = duration[0] * 60 + duration[1];
+        this.element = element;
+
+        this.setupUI();
+
+        this.interval = setInterval(this.handleInterval.bind(this), 1000);
+
+        this.element.dataset.status = "running";
+      }
+
+      handleDelete = () => {
+        clearInterval(this.interval);
+        this.element.remove();
+      };
+
+      handleInterval() {
+        this.time--;
+
+        if (this.time < 0) {
+          clearInterval(this.interval);
+          this.element.dataset.status = "done";
+        }
+
+        this.display.textContent = `${Math.floor(this.time / 60)}:${forceDigits(
+          this.time % 60
+        )}`;
+      }
+
+      handlePlayPause = () => {
+        if (this.interval != null) {
+          // Pause
+          this.interval = clearInterval(this.interval);
+          this.element.dataset.status = "paused";
+        } else {
+          // Play
+          this.interval = setInterval(this.handleInterval.bind(this), 1000);
+          this.element.dataset.status = "running";
+        }
+      };
+
+      setupUI = () => {
+        this.display = document.createElement("span");
+        this.display.textContent = `${Math.floor(this.time / 60)}:${forceDigits(
+          this.time % 60
+        )}`;
+        this.element.append(this.display);
+
+        const buttonContainer = document.createElement("div");
+        this.playPauseButton = document.createElement("button");
+        this.playPauseButton.innerHTML = `<span data-id="pause">⏸</span><span data-id="play">▶️</span>`;
+        this.playPauseButton.addEventListener("click", () =>
+          this.handlePlayPause()
+        );
+
+        this.deleteButton = document.createElement("button");
+        this.deleteButton.textContent = "✕";
+        this.deleteButton.addEventListener("click", () => {
+          this.handleDelete();
+        });
+
+        buttonContainer.append(this.playPauseButton, this.deleteButton);
+        this.element.append(buttonContainer);
+      };
+    }
+
+    document.forms.add.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const minutes = Number(event.target.elements.minutes.value);
+      const seconds = Number(event.target.elements.seconds.value);
+
+      if (minutes == null || seconds == null) {
+        return;
+      }
+
+      let totalSeconds = minutes * 60 + seconds;
+
+      const timerElement = document.createElement("div");
+
+      const timer = new Timer([minutes, seconds], timerElement);
+
+      output.appendChild(timerElement);
+    });
+  </script>
+  <script src="/shared.js"></script>
+</html>
