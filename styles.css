@@ -15,6 +15,13 @@ body {
   font: inherit;
 }
 
+hr {
+  background-color: var(--slightly-dark);
+  border: 0;
+  height: 1px;
+  margin: 1rem 0;
+}
+
 /* Layout */
 main {
   padding: 1rem;

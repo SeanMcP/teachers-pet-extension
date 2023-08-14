@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grading Table</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      dl {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      dt,dd {
+        padding: 0.5rem;
+      }
+      dt {
+        text-align: right;
+      }
+      dd {
+        margin: 0;
+      }
+      :is(dt,dd):nth-of-type(odd) {
+        background-color: var(--slightly-dark);
+      }
+    </style>
+  </head>
+  <body>
+    <ui-navbar></ui-navbar>
+    <main>
+      <form id="config">
+        <label>
+          <b>Number of problems</b>
+          <input id="problems" type="number" min="2" value="17" />
+        </label>
+        <label>
+          <b>Number of decimal places</b>
+          <input id="places" type="number" min="0" max="5" value="1" />
+        </label>
+        <button>Go</button>
+      </form>
+      <hr />
+      <output></output>
+    </main>
+  </body>
+  <script>
+    const output = document.querySelector('output');
+
+    document.forms.config.addEventListener('submit', event => {
+      event.preventDefault();
+      const problems = Number(event.target.elements.problems.value);
+      const places = Number(event.target.elements.places.value);
+
+      if (problems == null || places == null) {
+        return;
+      }
+
+      let rows = ""
+
+      for (let i = problems; i >= 0; i--) {
+        rows += `<dt>${i}/${problems}</dt><dd>${(100*i/problems).toFixed(places)}%</dd>`
+      }
+
+      output.innerHTML = `<dl>${rows}</dl>`
+    })
+  </script>
+  <script src="/shared.js"></script>
+</html>
