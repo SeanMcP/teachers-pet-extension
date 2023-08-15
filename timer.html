@@ -7,14 +7,62 @@
     <link rel="stylesheet" href="/styles.css" />
     <style>
       /** TITLE_OF_PAGE STYLES **/
-      [data-status="running"] [data-id="play"] {
+      div[data-status="running"]
+        :is(ui-icon[name="play"], [data-id="restart"]) {
         display: none;
       }
 
-      [data-status="paused"] [data-id="pause"] {
+      div[data-status="paused"]
+        :is(ui-icon[name="pause"], [data-id="restart"]) {
         display: none;
       }
+
+      div[data-status="done"] [data-id="play-pause"] {
+        display: none;
+      }
+
+      div[data-status="done"] {
+        box-shadow: 0 0 0 4px dodgerblue;
+      }
+
+      div[data-status="done"] > span {
+        animation: blinking 1s infinite;
+      }
+
+      div[data-status] {
+        align-items: center;
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: max-content 1fr min-content min-content;
+        padding: 0.5rem;
+      }
+
+      div[data-status]:nth-child(odd) {
+        background-color: var(--slightly-dark);
+        border-radius: 4px;
+      }
+
+      div[data-status] > span {
+        font-size: 1.5rem;
+      }
+
+      div[data-status] button {
+        padding: 0;
+      }
+
+      @keyframes blinking {
+        0% {
+          opacity: 0.1;
+        }
+        49% {
+          opacity: 0.1;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
     </style>
+    <link rel="preload" href="/bell.mp3" as="audio" />
   </head>
   <body>
     <ui-navbar></ui-navbar>
@@ -42,14 +90,18 @@
       return number < 10 ? `0${number}` : number;
     }
 
+    function formatTime(time) {
+      return `${Math.floor(time / 60)}:${forceDigits(time % 60)}`;
+    }
+
     class Timer {
       constructor(duration, element) {
-        this.time = duration[0] * 60 + duration[1];
+        this.duration = duration[0] * 60 + duration[1];
+        this.time = this.duration;
         this.element = element;
 
         this.setupUI();
-
-        this.interval = setInterval(this.handleInterval.bind(this), 1000);
+        this.setInterval();
 
         this.element.dataset.status = "running";
       }
@@ -62,14 +114,14 @@
       handleInterval() {
         this.time--;
 
-        if (this.time < 0) {
-          clearInterval(this.interval);
+        if (this.time === 0) {
+          const audio = new Audio("/bell.mp3");
+          audio.play();
+          this.interval = clearInterval(this.interval);
           this.element.dataset.status = "done";
         }
 
-        this.display.textContent = `${Math.floor(this.time / 60)}:${forceDigits(
-          this.time % 60
-        )}`;
+        this.setDisplay();
       }
 
       handlePlayPause = () => {
@@ -79,9 +131,31 @@
           this.element.dataset.status = "paused";
         } else {
           // Play
-          this.interval = setInterval(this.handleInterval.bind(this), 1000);
+          this.setInterval();
           this.element.dataset.status = "running";
         }
+      };
+
+      handleReset = () => {
+        this.time = this.duration;
+        this.setDisplay();
+
+        this.handlePlayPause();
+      };
+
+      setDisplay = () => {
+        this.display.textContent = formatTime(this.time);
+      };
+
+      setInterval = () => {
+        const isDev = location.port ? true : false;
+
+        isDev && console.log("setting interval at 10x speed in development");
+
+        this.interval = setInterval(
+          this.handleInterval.bind(this),
+          isDev ? 100 : 1000
+        );
       };
 
       setupUI = () => {
@@ -91,21 +165,27 @@
         )}`;
         this.element.append(this.display);
 
-        const buttonContainer = document.createElement("div");
-        this.playPauseButton = document.createElement("button");
-        this.playPauseButton.innerHTML = `<span data-id="pause">⏸</span><span data-id="play">▶️</span>`;
-        this.playPauseButton.addEventListener("click", () =>
-          this.handlePlayPause()
-        );
+        const timerLength = document.createElement("small");
+        timerLength.textContent = `(${formatTime(this.time)})`;
+        this.element.append(timerLength);
 
-        this.deleteButton = document.createElement("button");
-        this.deleteButton.textContent = "✕";
-        this.deleteButton.addEventListener("click", () => {
+        const playPauseButton = document.createElement("button");
+        playPauseButton.dataset.id = "play-pause";
+        playPauseButton.innerHTML = `<ui-icon name=pause></ui-icon><ui-icon name=play></ui-icon>`;
+        playPauseButton.addEventListener("click", () => this.handlePlayPause());
+
+        const restartButton = document.createElement("button");
+        restartButton.dataset.id = "restart";
+        restartButton.innerHTML = "<ui-icon name='arrow-clockwise'></ui-icon>";
+        restartButton.addEventListener("click", () => this.handleReset());
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "<ui-icon name=trash></ui-icon>";
+        deleteButton.addEventListener("click", () => {
           this.handleDelete();
         });
 
-        buttonContainer.append(this.playPauseButton, this.deleteButton);
-        this.element.append(buttonContainer);
+        this.element.append(playPauseButton, restartButton, deleteButton);
       };
     }
 
