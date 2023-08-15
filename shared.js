@@ -49,23 +49,33 @@ customElements.define(
 
       shadowRoot.innerHTML = this.getSVG();
 
+      const size = this.getAttribute("size") || "medium";
+      const [hostDimensions, svgDimensions] = this.getDimensions(size);
+
       const style = document.createElement("style");
       style.textContent = `
                 :host {
+                    ${hostDimensions}
                     align-items: center;
                     display: inline-flex;
-                    height: 44px;
                     justify-content: center;
-                    width: 44px;
                 }
                 svg {
-                    height: 24px;
-                    width: 24px;
+                    ${svgDimensions}
                 }
             `;
 
       shadowRoot.append(style);
     }
+
+    getDimensions = (size) => {
+      switch (size) {
+        case "medium":
+          return ["height: 44px; width: 44px;", "height: 24px; width: 24px;"];
+        case "small":
+          return ["height: 22px; width: 22px;", "height: 16px; width: 16px;"];
+      }
+    };
 
     getSVG() {
       switch (this.getAttribute("name")) {
