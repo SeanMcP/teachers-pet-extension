@@ -7,106 +7,136 @@
     <link rel="stylesheet" href="/styles.css" />
     <style>
       /** Random styles **/
-      .die {
+      output[data-id="color"]:not(:empty)::before {
+        background-color: var(--color);
+        border: 1px solid hsla(0, 0%, 0%, 0.1);
+        border-radius: 100%;
+        display: inline-block;
+        content: "";
+        height: 1rem;
+        width: 1rem;
+      }
+
+      .logo {
         align-items: center;
+        background-color: var(--color);
+        border: 1px solid hsla(0, 0%, 0%, 0.1);
+        border-bottom-left-radius: 100%;
+        border-bottom-right-radius: 100%;
+        font-size: 1.5rem;
         display: inline-flex;
-        height: 88px;
+        height: 2.5rem;
         justify-content: center;
-        position: relative;
-        width: 88px;
-      }
-
-      .die button[data-id="roll"] {
-        background-color: transparent;
-        border: 0;
-        font-size: 2rem;
-        padding: 0 0.5ch;
-      }
-
-      .die button[data-id=roll]:is(:focus,:hover) {
-        background-color: hsla(0, 0%, 100%, 0.5);
-        border-radius: 0.5rem;
-      }
-
-      .die button[data-id="delete"] {
-        padding: 0;
-        position: absolute;
-        top: -3px;
-        right: -3px;
-      }
-
-      .die button[data-id=delete]:not(:focus,:hover) {
-        background-color: transparent;
-        border-color: transparent;
-      }
-
-      .die div {
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-      }
-
-      .die div svg {
-        height: 100%;
-        width: 100%;
+        text-shadow: 0 2px 2px hsla(0, 0%, 0%, 50%);
+        width: 2.5rem;
       }
     </style>
   </head>
   <body>
     <ui-navbar></ui-navbar>
     <main>
-      <output></output>
+      <section class="Stack">
+        <div class="Line">
+          <button data-id="adjective">Random adjective</button
+          ><output class="Inline" data-id="adjective"></output>
+        </div>
+        <div class="Line">
+          <button data-id="animal">Random animal</button
+          ><output class="Inline" data-id="animal"></output>
+        </div>
+        <div class="Line">
+          <button data-id="color">Random color</button
+          ><output class="Inline" data-id="color"></output>
+        </div>
+        <form>
+          <button>Random Group Names</button>
+          <label>
+            <input type="number" name="groups" id="groups" min="1" value="4" />
+            <b>groups</b>
+          </label>
+        </form>
+      </section>
+      <hr />
+      <output class="Stack" data-id="groups"></output>
     </main>
   </body>
-  <script>
+  <script type="module">
     /** Random scripts **/
-    const output = document.querySelector("output");
+    import { adjectives, animals, colors } from "./lists.js";
+    import { pluralize } from "./third-party.js";
+    const animalKeys = Object.keys(animals);
 
-    class Die {
-      constructor(sides, element) {
-        this.sides = sides;
-        this.element = element;
+    const outputs = {};
+    document.querySelectorAll("output[data-id]").forEach((output) => {
+      outputs[output.dataset.id] = output;
+    });
 
-        this.render();
+    document.addEventListener("click", (event) => {
+      if (!event.target.matches(`button[data-id]`)) return;
+
+      event.preventDefault();
+
+      switch (event.target.dataset.id) {
+        case "adjective":
+          const [adjective] = getRandom(adjectives);
+          outputs.adjective.textContent = adjective;
+          break;
+        case "animal":
+          const [animal] = getRandom(animalKeys);
+          const emoji = animals[animal];
+          outputs.animal.innerHTML = `<span>${emoji}</span><span>${animal}</span>`;
+          break;
+        case "color":
+          const [color] = getRandom(colors);
+          outputs.color.textContent = capitalize(color);
+          outputs.color.style.setProperty("--color", color);
+          break;
+      }
+    });
+
+    document.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const groups = parseInt(event.target.groups.value);
+
+      if (!groups || Number.isNaN(groups)) return;
+
+      const randomAdjectives = getRandom(adjectives, groups);
+      const randomAnimals = getRandom(animalKeys, groups);
+      const randomColors = getRandom(colors, groups);
+
+      let outputHTML = "";
+
+      for (let i = 0; i < groups; i++) {
+        const adjective = randomAdjectives[i];
+        const animal = randomAnimals[i];
+        const color = randomColors[i];
+        outputHTML += `<div class="Line">
+          <div class="logo" style="--color: ${color}">${animals[animal]}</div>
+          ${adjective} ${pluralize(animal)}
+        </div>`;
       }
 
-      render = () => {
-        this.element.classList.add("die");
+      outputs.groups.innerHTML = outputHTML;
+    });
 
-        const rollButton = document.createElement("button");
-        rollButton.dataset.id = "roll";
-        rollButton.textContent = this.sides;
-        rollButton.addEventListener("click", () => {
-          rollButton.textContent = this.roll();
-        });
-
-        const deleteButton = document.createElement("button");
-        deleteButton.dataset.id = "delete";
-        deleteButton.innerHTML = "<ui-icon name=x size=small></ui-icon>";
-        deleteButton.addEventListener("click", () => {
-          this.element.remove();
-        });
-
-        const background = document.createElement("div");
-        background.innerHTML = `
-        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M95 2.88675C98.094 1.10042 101.906 1.10042 105 2.88675L181.603 47.1133C184.697 48.8996 186.603 52.2008 186.603 55.7735V144.227C186.603 147.799 184.697 151.1 181.603 152.887L105 197.113C101.906 198.9 98.094 198.9 95 197.113L18.3975 152.887C15.3034 151.1 13.3975 147.799 13.3975 144.227V55.7735C13.3975 52.2008 15.3035 48.8996 18.3975 47.1132L95 2.88675Z" fill="#D9D9D9"/>
-        </svg>`;
-        // TODO: Bring in SVG
-
-        this.element.append(background, rollButton, deleteButton);
-      };
-
-      roll = () => {
-        return Math.floor(Math.random() * this.sides) + 1;
-      };
+    function getRandom(array, n = 1) {
+      const shuffled = shuffle(array);
+      return shuffled.slice(0, n);
     }
 
-    const el = document.createElement("span");
+    function shuffle(original) {
+      const array = [...original];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
 
-    new Die(6, el);
-
-    output.append(el);
+    function capitalize(s) {
+      return s[0].toUpperCase() + s.slice(1);
+    }
   </script>
   <script src="/shared.js"></script>
 </html>

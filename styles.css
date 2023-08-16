@@ -11,7 +11,7 @@ body {
   min-height: 100vh;
 }
 
-:is(button,input,select) {
+:is(button, input, select) {
   font: inherit;
 }
 
@@ -30,4 +30,24 @@ main {
 /* Custom Elements */
 :is(ui-navbar) {
   display: block;
+}
+
+/* Utilities */
+.Line {
+  align-items: center;
+  display: flex;
+  gap: var(--Line-gap, 1rem);
+}
+
+.Inline {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--Inline-gap, 0.5rem);
+}
+
+.Stack > * {
+  margin-block: 0;
+}
+.Stack > * + * {
+  margin-block-start: var(--Stack-gap, 1rem);
 }
