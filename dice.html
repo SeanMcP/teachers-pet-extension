@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dice</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      /** Dice styles **/
+      .die {
+        align-items: center;
+        display: inline-flex;
+        height: 88px;
+        justify-content: center;
+        position: relative;
+        width: 88px;
+      }
+
+      .die button[data-id="roll"] {
+        background-color: transparent;
+        border: 0;
+        font-size: 2rem;
+        padding: 0 0.5ch;
+      }
+
+      .die button[data-id=roll]:is(:focus,:hover) {
+        background-color: hsla(0, 0%, 100%, 0.5);
+        border-radius: 0.5rem;
+      }
+
+      .die button[data-id="delete"] {
+        padding: 0;
+        position: absolute;
+        top: -3px;
+        right: -3px;
+      }
+
+      .die button[data-id=delete]:not(:focus,:hover) {
+        background-color: transparent;
+        border-color: transparent;
+      }
+
+      .die div {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+      }
+
+      .die div svg {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <ui-navbar></ui-navbar>
+    <main>
+      <output></output>
+    </main>
+  </body>
+  <script>
+    /** Dice scripts **/
+    const output = document.querySelector("output");
+
+    class Die {
+      constructor(sides, element) {
+        this.sides = sides;
+        this.element = element;
+
+        this.render();
+      }
+
+      render = () => {
+        this.element.classList.add("die");
+
+        const rollButton = document.createElement("button");
+        rollButton.dataset.id = "roll";
+        rollButton.textContent = this.sides;
+        rollButton.addEventListener("click", () => {
+          rollButton.textContent = this.roll();
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.dataset.id = "delete";
+        deleteButton.innerHTML = "<ui-icon name=x size=small></ui-icon>";
+        deleteButton.addEventListener("click", () => {
+          this.element.remove();
+        });
+
+        const background = document.createElement("div");
+        background.innerHTML = `
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M95 2.88675C98.094 1.10042 101.906 1.10042 105 2.88675L181.603 47.1133C184.697 48.8996 186.603 52.2008 186.603 55.7735V144.227C186.603 147.799 184.697 151.1 181.603 152.887L105 197.113C101.906 198.9 98.094 198.9 95 197.113L18.3975 152.887C15.3034 151.1 13.3975 147.799 13.3975 144.227V55.7735C13.3975 52.2008 15.3035 48.8996 18.3975 47.1132L95 2.88675Z" fill="#D9D9D9"/>
+        </svg>`;
+        // TODO: Bring in SVG
+
+        this.element.append(background, rollButton, deleteButton);
+      };
+
+      roll = () => {
+        return Math.floor(Math.random() * this.sides) + 1;
+      };
+    }
+
+    const el = document.createElement("span");
+
+    new Die(6, el);
+
+    output.append(el);
+  </script>
+  <script src="/shared.js"></script>
+</html>
